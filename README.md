@@ -139,6 +139,8 @@ the MCP client configuration example.
 |   |-- sdwan_tools_example.py
 |   `-- tool_catalog.py
 |-- scripts/
+|   |-- install_dev.ps1
+|   |-- install_dev.sh
 |   `-- print_tool_catalog.py
 |-- tests/
 |   `-- test_public_flow.py
@@ -147,6 +149,7 @@ the MCP client configuration example.
 |-- .github/
 |   `-- workflows/
 |       `-- ci.yml
+|-- .gitlab-ci.yml
 `-- docs/
     |-- architecture.md
     |-- code-highlights.md
@@ -189,12 +192,42 @@ This repo uses GitHub Actions, not GitLab CI. The workflow is in:
 
 It currently runs:
 
+- dependency installation
 - Python syntax checks
 - unit tests for the public-safe automation flow
-- Terraform formatting validation
+- MCP tool catalog smoke test
+- FastAPI/OpenAPI operation validation
+- Terraform formatting and validation
+- final pipeline summary
 
 The private lab has a larger CI/CD path, but this public repo keeps the checks
 small so they run without Cisco, AWS, VPN, or secrets.
+
+Open the visual pipeline here:
+
+```text
+GitHub repo -> Actions -> CI/CD -> latest run
+```
+
+The workflow is split into jobs with `needs:` so GitHub draws the graph:
+
+```text
+plan -> install -> tests / MCP smoke / OpenAPI smoke
+plan -> Terraform validate
+all checks -> summary
+```
+
+More detail: [docs/cicd-flow.md](docs/cicd-flow.md).
+
+GitLab equivalent:
+
+```text
+.gitlab-ci.yml
+```
+
+If this repo is mirrored or imported into GitLab, that file creates the same
+public-safe pipeline shape: plan, install, tests, MCP smoke, OpenAPI smoke,
+Terraform validate, and summary.
 
 ## Local Smoke Test
 
@@ -225,6 +258,18 @@ OpenAPI docs are available locally at:
 
 ```text
 http://127.0.0.1:8088/docs
+```
+
+Or use the local installer:
+
+```powershell
+.\scripts\install_dev.ps1
+```
+
+Linux/macOS:
+
+```bash
+bash scripts/install_dev.sh
 ```
 
 ## What Is Not Included

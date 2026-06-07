@@ -1,0 +1,116 @@
+stages:
+  - plan
+  - install
+  - test
+  - smoke
+  - terraform
+  - summary
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+pipeline_plan:
+  stage: plan
+  image: alpine:3.20
+  script:
+    - echo "Public-safe CI/CD plan for the AI SD-WAN MCP PoC"
+    - echo "No Cisco, AWS, CML, VPN, or private lab calls are made."
+
+install_dependencies:
+  stage: install
+  image: python:3.12-slim
+  needs: ["pipeline_plan"]
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - python -m py_compile backend/app.py backend/automation_engine.py mcp_server/sdwan_tools_example.py mcp_server/tool_catalog.py scripts/print_tool_catalog.py
+    - python -m pip freeze > pip-freeze.txt
+  artifacts:
+    paths:
+      - pip-freeze.txt
+    expire_in: 1 week
+
+unit_tests:
+  stage: test
+  image: python:3.12-slim
+  needs: ["install_dependencies"]
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - python -m unittest discover -s tests -t . -v
+
+mcp_tool_smoke:
+  stage: smoke
+  image: python:3.12-slim
+  needs: ["install_dependencies"]
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - python scripts/print_tool_catalog.py | tee mcp-tool-catalog.json
+    - |
+      python - <<'PY'
+      from backend.automation_engine import create_and_onboard_edge, diagnose_edge
+
+      plan = create_and_onboard_edge("CI_AutomationSite", approve=False, dry_run=True)
+      assert plan["status"] == "dry_run"
+      assert plan["plan"]["target"]["system_ip"] == "10.0.0.4"
+
+      diag = diagnose_edge("Edge1")
+      assert diag["postchecks"]["status"] == "pass_with_warnings"
+      print("MCP backing engine smoke passed")
+      PY
+  artifacts:
+    paths:
+      - mcp-tool-catalog.json
+    expire_in: 1 week
+
+openapi_smoke:
+  stage: smoke
+  image: python:3.12-slim
+  needs: ["install_dependencies"]
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - |
+      python - <<'PY'
+      from backend.app import app
+
+      spec = app.openapi()
+      ops = {
+          method["operationId"]
+          for path in spec["paths"].values()
+          for method in path.values()
+          if isinstance(method, dict) and "operationId" in method
+      }
+      assert "sdwanCreateAndOnboardEdge" in ops
+      assert "sdwanDiagnoseEdge" in ops
+      assert "sdwanListDevices" in ops
+      print("OpenAPI operations:", sorted(ops))
+      PY
+
+terraform_validate:
+  stage: terraform
+  image:
+    name: hashicorp/terraform:1.7.5
+    entrypoint: [""]
+  needs: ["pipeline_plan"]
+  script:
+    - terraform -chdir=terraform fmt -check -diff
+    - terraform -chdir=terraform init -backend=false
+    - terraform -chdir=terraform validate
+
+pipeline_summary:
+  stage: summary
+  image: alpine:3.20
+  needs:
+    - unit_tests
+    - mcp_tool_smoke
+    - openapi_smoke
+    - terraform_validate
+  when: always
+  script:
+    - echo "Pipeline completed. Review previous jobs for test, MCP, OpenAPI, and Terraform results."
