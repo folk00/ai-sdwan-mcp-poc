@@ -141,6 +141,8 @@ the MCP client configuration example.
 |-- scripts/
 |   |-- install_dev.ps1
 |   |-- install_dev.sh
+|   |-- register_gitlab_runner_windows.ps1
+|   |-- register_gitlab_runner_linux.sh
 |   `-- print_tool_catalog.py
 |-- tests/
 |   `-- test_public_flow.py
@@ -228,6 +230,10 @@ GitLab equivalent:
 If this repo is mirrored or imported into GitLab, that file creates the same
 public-safe pipeline shape: plan, install, tests, MCP smoke, OpenAPI smoke,
 Terraform validate, and summary.
+
+Self-hosted GitLab Runner setup is documented in
+[docs/gitlab-runner.md](docs/gitlab-runner.md). The repo includes registration
+helper scripts, but registration requires a GitLab project runner token.
 
 ## Local Smoke Test
 
