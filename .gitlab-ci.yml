@@ -5,6 +5,7 @@ stages:
   - smoke
   - terraform
   - summary
+  - lab
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -27,7 +28,7 @@ install_dependencies:
   script:
     - python -m pip install --upgrade pip
     - pip install -r requirements.txt
-    - python -m py_compile backend/app.py backend/automation_engine.py mcp_server/sdwan_tools_example.py mcp_server/tool_catalog.py scripts/print_tool_catalog.py
+    - python -m py_compile backend/app.py backend/automation_engine.py mcp_server/sdwan_tools_example.py mcp_server/tool_catalog.py scripts/print_tool_catalog.py scripts/lab_pipeline_client.py
     - python -m pip freeze > pip-freeze.txt
   artifacts:
     paths:
@@ -114,3 +115,58 @@ pipeline_summary:
   when: always
   script:
     - echo "Pipeline completed. Review previous jobs for test, MCP, OpenAPI, and Terraform results."
+
+lab_health:
+  stage: lab
+  image: python:3.12-slim
+  when: manual
+  allow_failure: true
+  script:
+    - python scripts/lab_pipeline_client.py health
+  artifacts:
+    when: always
+    paths:
+      - lab-health.json
+    expire_in: 1 week
+
+lab_edge_dry_run:
+  stage: lab
+  image: python:3.12-slim
+  when: manual
+  allow_failure: true
+  script:
+    - python scripts/lab_pipeline_client.py health
+    - python scripts/lab_pipeline_client.py dry-run --edge-label "${LAB_EDGE_LABEL:-GitLab_AutomationSite}"
+  artifacts:
+    when: always
+    paths:
+      - lab-health.json
+      - lab-dry-run.json
+    expire_in: 1 week
+
+lab_create_edge:
+  stage: lab
+  image: python:3.12-slim
+  when: manual
+  allow_failure: true
+  script:
+    - test "$LAB_MUTATION_APPROVED" = "true"
+    - python scripts/lab_pipeline_client.py apply --edge-label "${LAB_EDGE_LABEL:-GitLab_AutomationSite}"
+  artifacts:
+    when: always
+    paths:
+      - lab-apply-result.json
+    expire_in: 1 week
+
+lab_edge_postcheck:
+  stage: lab
+  image: python:3.12-slim
+  when: manual
+  allow_failure: true
+  script:
+    - python scripts/lab_pipeline_client.py wait-postcheck --edge-label "${LAB_EDGE_LABEL:-GitLab_AutomationSite}"
+  artifacts:
+    when: always
+    paths:
+      - lab-postcheck.json
+    expire_in: 1 week

@@ -235,6 +235,26 @@ Self-hosted GitLab Runner setup is documented in
 [docs/gitlab-runner.md](docs/gitlab-runner.md). The repo includes registration
 helper scripts, but registration requires a GitLab project runner token.
 
+Private real-lab mode:
+
+```text
+GitLab -> Build -> Pipelines -> latest pipeline -> manual lab jobs
+```
+
+The GitLab pipeline also includes optional manual jobs for a private lab:
+
+```text
+lab_health
+lab_edge_dry_run
+lab_create_edge
+lab_edge_postcheck
+```
+
+Those jobs call a private FastAPI automation backend using GitLab CI/CD
+variables such as `LAB_API_BASE_URL` and `LAB_API_KEY`. That backend can then
+touch CML, SD-WAN Manager, AWS, or Terraform without putting lab URLs or secrets
+in the repository. See [docs/lab-cicd-mutations.md](docs/lab-cicd-mutations.md).
+
 ## Local Smoke Test
 
 ```powershell

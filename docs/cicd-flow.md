@@ -88,3 +88,27 @@ plan -> install -> test -> smoke -> terraform -> summary
 
 The jobs are intentionally similar to GitHub Actions so the same story works in
 either platform.
+
+## GitLab Real-Lab Buttons
+
+The GitLab pipeline also defines manual jobs in the `lab` stage:
+
+```text
+lab_health
+lab_edge_dry_run
+lab_create_edge
+lab_edge_postcheck
+```
+
+These jobs are visible in the GitLab web UI. They do not run automatically.
+They call `scripts/lab_pipeline_client.py`, which talks to a private FastAPI
+automation backend through CI/CD variables.
+
+Use this when you want the full visual loop:
+
+```text
+commit -> push -> GitLab pipeline -> manual lab button -> CML/SD-WAN backend -> JSON artifact
+```
+
+The details and required variables are in
+[lab-cicd-mutations.md](lab-cicd-mutations.md).
