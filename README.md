@@ -310,9 +310,3 @@ bash scripts/install_dev.sh
 - actual customer or internal documentation
 - generated lab backups
 
-## Summary
-
-Built an AI-assisted SD-WAN automation PoC where an LLM uses MCP/OpenAPI tools
-to create, onboard, validate, and explain virtual SD-WAN branch edges across
-Cisco SD-WAN Manager, CML, Terraform-managed AWS infrastructure, and CI/CD
-guardrails.
