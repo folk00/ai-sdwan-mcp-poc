@@ -149,18 +149,15 @@ lab_create_edge:
   image: python:3.12-slim
   when: manual
   allow_failure: true
-  needs:
-    - job: pipeline_summary
-    - job: lab_edge_dry_run
-      artifacts: true
-      optional: true
   script:
     - test "$LAB_MUTATION_APPROVED" = "true"
     - python scripts/lab_pipeline_client.py apply --edge-label "${LAB_EDGE_LABEL:-GitLab_AutomationSite}"
+    - python scripts/lab_pipeline_client.py wait-postcheck --edge-label "${LAB_EDGE_LABEL:-GitLab_AutomationSite}" --from-apply lab-apply-result.json
   artifacts:
     when: always
     paths:
       - lab-apply-result.json
+      - lab-postcheck.json
     expire_in: 1 week
 
 lab_edge_postcheck:
@@ -168,11 +165,6 @@ lab_edge_postcheck:
   image: python:3.12-slim
   when: manual
   allow_failure: true
-  needs:
-    - job: pipeline_summary
-    - job: lab_create_edge
-      artifacts: true
-      optional: true
   script:
     - python scripts/lab_pipeline_client.py wait-postcheck --edge-label "${LAB_EDGE_LABEL:-GitLab_AutomationSite}"
   artifacts:
