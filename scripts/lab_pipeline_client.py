@@ -114,9 +114,10 @@ def health(args: argparse.Namespace) -> None:
 
 
 def dry_run(args: argparse.Namespace) -> None:
+    dry_run_approve = os.getenv("LAB_DRY_RUN_APPROVE", "").lower() == "true"
     payload = {
         "edge_label": args.edge_label,
-        "approve": False,
+        "approve": dry_run_approve,
         "dry_run": True,
     }
     result = _request("POST", _endpoint("LAB_ONBOARD_ENDPOINT", DEFAULT_ONBOARD_ENDPOINT), payload)

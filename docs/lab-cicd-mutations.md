@@ -53,10 +53,14 @@ Optional:
 LAB_API_KEY_HEADER=x-api-key
 LAB_BEARER_TOKEN=
 LAB_EDGE_LABEL=GitLab_AutomationSite
+LAB_DRY_RUN_APPROVE=false
 LAB_API_TIMEOUT=120
 LAB_POSTCHECK_ATTEMPTS=10
 LAB_POSTCHECK_SLEEP_SECONDS=30
 ```
+
+Set `LAB_DRY_RUN_APPROVE=true` only when the private backend requires an
+explicit approval flag even for non-mutating dry-run calls.
 
 Endpoint overrides if your private API uses different paths:
 
