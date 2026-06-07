@@ -24,7 +24,7 @@ variable "name" {
 }
 
 # Public example only. The private lab uses an EC2 + EIP + Caddy pattern
-# to provide a stable Connector Studio URL while the backend remains local.
+# to provide a stable HTTPS URL while the backend remains local.
 resource "aws_eip" "connector" {
   domain = "vpc"
   tags = {
@@ -35,4 +35,3 @@ resource "aws_eip" "connector" {
 output "public_connector_pattern" {
   value = "https://sdwan-agent.${aws_eip.connector.public_ip}.sslip.io"
 }
-

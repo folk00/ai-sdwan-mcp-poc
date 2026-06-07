@@ -48,7 +48,7 @@ In the private lab, one LLM-friendly tool can:
 
 ```mermaid
 flowchart LR
-    user["Operator"] --> llm["LLM client<br/>Circuit / Claude / MCP"]
+    user["Operator"] --> llm["LLM client<br/>Claude Desktop / IDE / MCP client"]
     llm --> tools["MCP or OpenAPI tools"]
     tools --> api["FastAPI automation backend"]
     api --> policy["Guardrails<br/>approval gates<br/>redaction<br/>IPAM"]
@@ -74,7 +74,7 @@ trusted with raw shell access or uncontrolled network changes.
 ## MCP Flow
 
 MCP is the bridge between the LLM and the automation code. In the private lab,
-Circuit or another MCP-capable client can call tools like:
+an MCP-capable client can call tools like:
 
 ```text
 get_devices
