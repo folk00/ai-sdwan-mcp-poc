@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sdwan-netops-public-example": {
+      "command": "python",
+      "args": [
+        "C:/path/to/ai-sdwan-mcp-poc/mcp_server/sdwan_tools_example.py"
+      ]
+    }
+  }
+}
+

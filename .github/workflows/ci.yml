@@ -16,7 +16,15 @@ jobs:
           python-version: "3.12"
       - name: Syntax check
         run: |
-          python -m py_compile backend/app.py mcp_server/sdwan_tools_example.py
+          python -m py_compile backend/app.py backend/automation_engine.py mcp_server/sdwan_tools_example.py mcp_server/tool_catalog.py scripts/print_tool_catalog.py
+
+      - name: Unit tests
+        run: |
+          python -m unittest discover -s tests -t . -v
+
+      - name: Show MCP tool catalog
+        run: |
+          python scripts/print_tool_catalog.py
 
   terraform-check:
     runs-on: ubuntu-latest

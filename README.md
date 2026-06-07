@@ -1,6 +1,9 @@
 # AI-Assisted SD-WAN Automation PoC
 
-This is the public, lightweight version of a private lab project.
+[![CI](https://github.com/folk00/ai-sdwan-mcp-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/folk00/ai-sdwan-mcp-poc/actions/workflows/ci.yml)
+
+This is the public, lightweight proof-of-concept version of a private lab
+project.
 
 The private lab connects an LLM tool workflow to Cisco Catalyst SD-WAN Manager,
 Cisco Modeling Labs, and AWS. This public version keeps the architecture,
@@ -11,8 +14,7 @@ Only public product names and generic architecture are described here. Do not
 publish internal Cisco documents, customer data, restricted screenshots, live
 lab identifiers, private configs, or generated artifacts.
 
-To publish it, copy the contents of this `public_poc/` folder into a separate
-GitHub repository. Do not publish the parent private lab directory.
+The private lab code stays private. This repository is the safe public version.
 
 ## What This Shows
 
@@ -24,6 +26,10 @@ GitHub repository. Do not publish the parent private lab directory.
   automation story.
 - How to design guardrails for mutation: explicit approval, environment gates,
   IPAM checks, redaction, postchecks, and human-readable reports.
+
+This repo is intentionally small, but it is not only documentation. The sample
+code runs a public-safe version of the same flow: inventory -> IPAM -> branch
+plan -> approval gate -> postchecks -> LLM-ready JSON.
 
 ## What The Private Lab Does
 
@@ -65,16 +71,77 @@ Network APIs = source of truth
 That separation keeps the demo practical. The model can be useful without being
 trusted with raw shell access or uncontrolled network changes.
 
+## MCP Flow
+
+MCP is the bridge between the LLM and the automation code. In the private lab,
+Circuit or another MCP-capable client can call tools like:
+
+```text
+get_devices
+create_and_onboard_edge
+diagnose_edge
+```
+
+The tool returns structured JSON. The LLM turns that JSON into a readable
+operator report.
+
+```mermaid
+sequenceDiagram
+    participant User as Operator
+    participant LLM as LLM Client
+    participant MCP as MCP Tool Server
+    participant API as FastAPI / Automation Engine
+
+    User->>LLM: Create a demo branch edge
+    LLM->>MCP: create_and_onboard_edge(edge_label, dry_run=true)
+    MCP->>API: Run deterministic workflow
+    API->>API: Inventory, IPAM, guardrails, postchecks
+    API->>MCP: Structured JSON
+    MCP->>LLM: Tool result
+    LLM->>User: Plain-English summary
+```
+
+The public example keeps the same shape but uses sample data instead of live
+SD-WAN/CML APIs.
+
+The MCP server is created in [mcp_server/sdwan_tools_example.py](mcp_server/sdwan_tools_example.py):
+
+```python
+mcp = FastMCP("sdwan-netops-public-example")
+
+@mcp.tool()
+def create_and_onboard_edge(edge_label: str, approve: bool = False, dry_run: bool = True):
+    return run_create_edge(edge_label, approve=approve, dry_run=dry_run)
+```
+
+Run it with:
+
+```powershell
+python mcp_server\sdwan_tools_example.py
+```
+
+See [mcp_server/README.md](mcp_server/README.md) and
+[mcp_server/mcp_config.example.json](mcp_server/mcp_config.example.json) for
+the MCP client configuration example.
+
 ## Repository Shape
 
 ```text
-public_poc/
+.
 |-- README.md
 |-- .env.example
 |-- backend/
-|   `-- app.py
+|   |-- app.py
+|   `-- automation_engine.py
 |-- mcp_server/
-|   `-- sdwan_tools_example.py
+|   |-- README.md
+|   |-- mcp_config.example.json
+|   |-- sdwan_tools_example.py
+|   `-- tool_catalog.py
+|-- scripts/
+|   `-- print_tool_catalog.py
+|-- tests/
+|   `-- test_public_flow.py
 |-- terraform/
 |   `-- aws-connector-example.tf
 |-- .github/
@@ -83,6 +150,7 @@ public_poc/
 `-- docs/
     |-- architecture.md
     |-- code-highlights.md
+    |-- mcp-flow.md
     `-- public-release-checklist.md
 ```
 
@@ -113,14 +181,20 @@ needs a follow-up check, but this is not blocking fabric onboarding.
 
 ## CI/CD
 
-The private project uses GitHub Actions for:
+This repo uses GitHub Actions, not GitLab CI. The workflow is in:
 
-- mock-mode Python tests
-- basic lint feedback
-- Terraform formatting and validation
-- Dependabot checks for Python, GitHub Actions, and Terraform dependencies
+```text
+.github/workflows/ci.yml
+```
 
-This public version includes a small workflow example showing the same pattern.
+It currently runs:
+
+- Python syntax checks
+- unit tests for the public-safe automation flow
+- Terraform formatting validation
+
+The private lab has a larger CI/CD path, but this public repo keeps the checks
+small so they run without Cisco, AWS, VPN, or secrets.
 
 ## Local Smoke Test
 
@@ -129,7 +203,28 @@ python -m venv .venv
 . .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python -m py_compile backend\app.py mcp_server\sdwan_tools_example.py
+python -m unittest discover -s tests -t . -v
+python scripts\print_tool_catalog.py
 uvicorn backend.app:app --host 127.0.0.1 --port 8088
+```
+
+Try the public-safe API:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8088/api/health
+Invoke-RestMethod http://127.0.0.1:8088/api/sdwan/devices
+
+$body = @{ edge_label = "DEMO_AutomationSite"; dry_run = $true } | ConvertTo-Json
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8088/api/sdwan/onboarding/by-label `
+  -ContentType application/json `
+  -Body $body
+```
+
+OpenAPI docs are available locally at:
+
+```text
+http://127.0.0.1:8088/docs
 ```
 
 ## What Is Not Included
