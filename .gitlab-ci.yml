@@ -149,6 +149,11 @@ lab_create_edge:
   image: python:3.12-slim
   when: manual
   allow_failure: true
+  needs:
+    - job: pipeline_summary
+    - job: lab_edge_dry_run
+      artifacts: true
+      optional: true
   script:
     - test "$LAB_MUTATION_APPROVED" = "true"
     - python scripts/lab_pipeline_client.py apply --edge-label "${LAB_EDGE_LABEL:-GitLab_AutomationSite}"
@@ -163,6 +168,11 @@ lab_edge_postcheck:
   image: python:3.12-slim
   when: manual
   allow_failure: true
+  needs:
+    - job: pipeline_summary
+    - job: lab_create_edge
+      artifacts: true
+      optional: true
   script:
     - python scripts/lab_pipeline_client.py wait-postcheck --edge-label "${LAB_EDGE_LABEL:-GitLab_AutomationSite}"
   artifacts:

@@ -54,13 +54,18 @@ LAB_API_KEY_HEADER=x-api-key
 LAB_BEARER_TOKEN=
 LAB_EDGE_LABEL=GitLab_AutomationSite
 LAB_DRY_RUN_APPROVE=false
-LAB_API_TIMEOUT=120
+LAB_DRY_RUN_ENDPOINT=/api/cml/automation-edges/create
+LAB_API_TIMEOUT=1200
 LAB_POSTCHECK_ATTEMPTS=10
 LAB_POSTCHECK_SLEEP_SECONDS=30
 ```
 
 Set `LAB_DRY_RUN_APPROVE=true` only when the private backend requires an
 explicit approval flag even for non-mutating dry-run calls.
+
+For the private SD-WAN/CML backend, keep `LAB_DRY_RUN_ENDPOINT` pointed at the
+CML automation-edge create endpoint. It returns a read-only plan and avoids
+calling the full onboarding apply endpoint during a dry-run job.
 
 Endpoint overrides if your private API uses different paths:
 

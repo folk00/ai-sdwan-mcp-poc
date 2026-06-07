@@ -14,6 +14,7 @@ from typing import Any
 DEFAULT_ONBOARD_ENDPOINT = "/api/sdwan/onboarding/by-label"
 DEFAULT_HEALTH_ENDPOINT = "/api/health"
 DEFAULT_POSTCHECK_ENDPOINT = "/api/sdwan/onboarding/postchecks"
+DEFAULT_DRY_RUN_ENDPOINT = "/api/cml/automation-edges/create"
 
 
 def _env(name: str, default: str | None = None) -> str:
@@ -115,12 +116,20 @@ def health(args: argparse.Namespace) -> None:
 
 def dry_run(args: argparse.Namespace) -> None:
     dry_run_approve = os.getenv("LAB_DRY_RUN_APPROVE", "").lower() == "true"
-    payload = {
-        "edge_label": args.edge_label,
-        "approve": dry_run_approve,
-        "dry_run": True,
-    }
-    result = _request("POST", _endpoint("LAB_ONBOARD_ENDPOINT", DEFAULT_ONBOARD_ENDPOINT), payload)
+    endpoint = _endpoint("LAB_DRY_RUN_ENDPOINT", DEFAULT_DRY_RUN_ENDPOINT)
+    payload: dict[str, Any] = {"edge_label": args.edge_label, "dry_run": True}
+    if "automation-edges/create" in endpoint:
+        payload.update(
+            {
+                "approve_create": False,
+                "with_links": True,
+                "include_bootstrap": True,
+                "bootstrap_source_device": os.getenv("LAB_SOURCE_DEVICE", "Edge1"),
+            }
+        )
+    else:
+        payload["approve"] = dry_run_approve
+    result = _request("POST", endpoint, payload)
     _write_artifact(args.output, result)
     _print_summary("dry_run", result)
 
