@@ -1,6 +1,11 @@
 # AI-Assisted SD-WAN Automation PoC
 
 [![CI](https://github.com/folk00/ai-sdwan-mcp-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/folk00/ai-sdwan-mcp-poc/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Terraform 1.7](https://img.shields.io/badge/terraform-1.7-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![MCP](https://img.shields.io/badge/protocol-MCP-6E40C9)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 This is the public, lightweight proof-of-concept version of a private lab
 project.
