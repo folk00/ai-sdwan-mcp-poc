@@ -255,6 +255,32 @@ variables such as `LAB_API_BASE_URL` and `LAB_API_KEY`. That backend can then
 touch CML, SD-WAN Manager, AWS, or Terraform without putting lab URLs or secrets
 in the repository. See [docs/lab-cicd-mutations.md](docs/lab-cicd-mutations.md).
 
+## Demo Screenshots
+
+for presentation or demos, the strongest screenshots are:
+
+```text
+GitLab pipeline green
+GitLab lab manual jobs
+lab_create_edge success artifact
+MCP tool catalog
+.gitlab-ci.yml lab stage
+scripts/lab_pipeline_client.py
+```
+
+Recommended image paths:
+
+```text
+docs/images/gitlab-pipeline-green.png
+docs/images/gitlab-lab-manual-jobs.png
+docs/images/gitlab-lab-create-success.png
+docs/images/mcp-tool-catalog.png
+docs/images/code-gitlab-ci.png
+docs/images/code-lab-pipeline-client.png
+```
+
+Screenshot checklist: [docs/screenshot-guide.md](docs/screenshot-guide.md).
+
 ## Local Smoke Test
 
 ```powershell
