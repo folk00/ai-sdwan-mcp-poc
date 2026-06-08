@@ -257,7 +257,7 @@ in the repository. See [docs/lab-cicd-mutations.md](docs/lab-cicd-mutations.md).
 
 ## Demo Screenshots
 
-for presentation or demos, the strongest screenshots are:
+The most informative screenshots to capture when demonstrating the project:
 
 ```text
 GitLab pipeline green

@@ -1,8 +1,7 @@
 # Demo Screenshot Guide
 
-Use these screenshots when presenting the project in a CV, reference, or
-demos. Keep lab URLs, tokens, device UUIDs, and private IPs redacted if the
-repository is public.
+Use these screenshots when presenting the project. Keep lab URLs, tokens,
+device UUIDs, and private IPs redacted if the repository is public.
 
 ## Recommended Screenshots
 
